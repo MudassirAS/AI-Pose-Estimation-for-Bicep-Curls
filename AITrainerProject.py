@@ -3,7 +3,12 @@ import numpy as np
 import time
 import PoseModule as pm
 
-cap = cv2.VideoCapture("data/barbell biceps curl_31.mp4")
+cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+
+if not cap.isOpened():
+    raise RuntimeError("Could not open the default camera.")
 
 detector = pm.PoseDetector()
 count = 0
@@ -13,9 +18,9 @@ pTime = 0
 
 while True:
     success, img = cap.read()
+    if not success:
+        continue
     img = cv2.resize(img, (1280, 720))
-
-    # img = cv2.imread("data/pose.png")
 
     img = detector.findPose(img, False)
     lmList = detector.findPosition(img, False)
@@ -61,5 +66,9 @@ while True:
 
     cv2.putText(img, f'FPS: {int(fps)}', (50, 70), cv2.FONT_HERSHEY_PLAIN, 5, (255, 0, 0), 5)
     cv2.imshow("Image", img)
-    cv2.waitKey(1)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
 
